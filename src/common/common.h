@@ -53,7 +53,7 @@ QVariantMap cloneData(const QMimeData &data);
 
 QString cloneText(const QMimeData &data);
 
-QMimeData* createMimeData(const QVariantMap &data);
+QMimeData* createMimeData(const QVariantMap &data, int nSaltType = 0);
 
 /** Return true if clipboard content was created by any session of this application. */
 bool anySessionOwnsClipboardData(const QVariantMap &data);

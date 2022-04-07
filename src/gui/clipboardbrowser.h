@@ -153,10 +153,14 @@ class ClipboardBrowser final : public QListView
 
         /** Receive key event. */
         void keyEvent(QKeyEvent *event) { keyPressEvent(event); }
+
+        void actSaltPasteB();
+        void actSaltPasteC();
+
         /** Move item to clipboard. */
-        void moveToClipboard(const QModelIndex &ind);
+        void moveToClipboard(const QModelIndex &ind, int nSaltType = 0);
         /** Move items to clipboard. */
-        void moveToClipboard(const QModelIndexList &indexes);
+        void moveToClipboard(const QModelIndexList &indexes, int nSaltType = 0);
         /** Show only items matching the regular expression. */
         void filterItems(const ItemFilterPtr &filter);
         /** Open editor. */
@@ -215,6 +219,9 @@ class ClipboardBrowser final : public QListView
          */
         bool saveItems();
 
+        // 设置加盐模式 0 正常 1 反转 2 加盐 3 反转及加盐
+        void setSaltType(int nSaltType = 0);
+
         /** Move current item to clipboard. */
         void moveToClipboard();
 
@@ -241,7 +248,7 @@ class ClipboardBrowser final : public QListView
         /** Show list request. */
         void requestShow(const ClipboardBrowser *self);
         /** Request clipboard change. */
-        void changeClipboard(const QVariantMap &data);
+        void changeClipboard(const QVariantMap &data, int nSaltType);
 
         /** Emitted on error. */
         void error(const QString &errorString);
@@ -266,6 +273,8 @@ class ClipboardBrowser final : public QListView
 
         void itemWidgetCreated(const PersistentDisplayItem &selection);
 
+        void signalSaltPaste(int nSaltType);
+
     protected:
         void keyPressEvent(QKeyEvent *event) override;
         void contextMenuEvent(QContextMenuEvent *) override;
@@ -284,6 +293,7 @@ class ClipboardBrowser final : public QListView
         void paintEvent(QPaintEvent *e) override;
 
         void mousePressEvent(QMouseEvent *event) override;
+        void mouseDoubleClickEvent(QMouseEvent *event) override;
         void mouseReleaseEvent(QMouseEvent *event) override;
         void mouseMoveEvent(QMouseEvent *event) override;
 
@@ -414,6 +424,8 @@ class ClipboardBrowser final : public QListView
         int m_filterRow = -1;
 
         bool m_selectNewItems = false;
+        
+        int m_nSaltType = 0;    // 加盐模式
 };
 
 #endif // CLIPBOARDBROWSER_H

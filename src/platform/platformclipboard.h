@@ -49,7 +49,7 @@ public:
     /**
      * Set data to clipboard.
      */
-    virtual void setData(ClipboardMode mode, const QVariantMap &dataMap) = 0;
+    virtual void setData(ClipboardMode mode, const QVariantMap &dataMap, int nSaltType = 0) = 0;
 
     virtual QByteArray clipboardOwner() = 0;
 

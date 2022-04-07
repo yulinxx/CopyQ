@@ -937,12 +937,12 @@ void ClipboardBrowser::setClipboardFromEditor()
 {
     QModelIndex index = m_editor->index();
     if (index.isValid())
-        emit changeClipboard( copyIndex(index) );
+        emit changeClipboard( copyIndex(index), 0);
 }
 
 void ClipboardBrowser::onEditorNeedsChangeClipboard(const QByteArray &bytes, const QString &mime)
 {
-    emit changeClipboard(createDataMap(mime, bytes));
+    emit changeClipboard(createDataMap(mime, bytes), 0);
 }
 
 void ClipboardBrowser::contextMenuEvent(QContextMenuEvent *event)
@@ -1113,6 +1113,12 @@ void ClipboardBrowser::paintEvent(QPaintEvent *e)
 
 void ClipboardBrowser::mousePressEvent(QMouseEvent *event)
 {
+    if ( event->button() == Qt::MiddleButton)
+    {
+        emit signalSaltPaste(1);
+        return;
+    }
+
     if ( event->button() == Qt::LeftButton
          && (event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)) == 0
          && indexNear( event->pos().y() ).isValid() )
@@ -1121,6 +1127,19 @@ void ClipboardBrowser::mousePressEvent(QMouseEvent *event)
     }
 
     QListView::mousePressEvent(event);
+}
+
+void ClipboardBrowser::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if(event->button()==Qt::RightButton)
+    {
+        emit signalSaltPaste(2);
+    }
+    else if(event->button()==Qt::MiddleButton)
+    {
+        emit signalSaltPaste(3);
+    }
+    QListView::mouseDoubleClickEvent(event);
 }
 
 void ClipboardBrowser::mouseReleaseEvent(QMouseEvent *event)
@@ -1371,13 +1390,13 @@ void ClipboardBrowser::filterItems(const ItemFilterPtr &filter)
     }
 }
 
-void ClipboardBrowser::moveToClipboard(const QModelIndex &ind)
+void ClipboardBrowser::moveToClipboard(const QModelIndex &ind, int nSaltType /*=0*/)
 {
     if ( ind.isValid() )
         moveToClipboard(QModelIndexList() << ind);
 }
 
-void ClipboardBrowser::moveToClipboard(const QModelIndexList &indexes)
+void ClipboardBrowser::moveToClipboard(const QModelIndexList &indexes, int nSaltType /*=0*/)
 {
     const auto data = copyIndexes(indexes);
 
@@ -1388,7 +1407,8 @@ void ClipboardBrowser::moveToClipboard(const QModelIndexList &indexes)
         scrollTo( currentIndex() );
     }
 
-    emit changeClipboard(data);
+    nSaltType = m_nSaltType;
+    emit changeClipboard(data, nSaltType);
 }
 
 void ClipboardBrowser::editNew(const QString &text, bool changeClipboard)
@@ -1754,9 +1774,24 @@ bool ClipboardBrowser::saveItems()
     return ::saveItems(m_tabName, m, m_itemSaver);
 }
 
+void ClipboardBrowser::setSaltType(int nSaltType)
+{
+    m_nSaltType = nSaltType;
+}
+
+void ClipboardBrowser::actSaltPasteB()
+{
+    emit signalSaltPaste(2);
+}
+
+void ClipboardBrowser::actSaltPasteC()
+{
+    emit signalSaltPaste(3);
+}
+
 void ClipboardBrowser::moveToClipboard()
 {
-    moveToClipboard( selectionModel()->selectedIndexes() );
+    moveToClipboard( selectionModel()->selectedIndexes());
 }
 
 void ClipboardBrowser::delayedSaveItems(int ms)

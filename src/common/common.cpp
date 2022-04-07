@@ -40,6 +40,7 @@
 #include <QRegularExpression>
 #include <QThread>
 #include <QUrl>
+#include <QRandomGenerator>
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #   include <QTextCodec>
@@ -445,7 +446,7 @@ QVariantMap cloneData(const QMimeData &data)
     return cloneData(data, formats);
 }
 
-QMimeData* createMimeData(const QVariantMap &data)
+QMimeData* createMimeData(const QVariantMap &data, int nSaltType/* = 0*/)
 {
     QStringList copyFormats = data.keys();
     copyFormats.removeOne(mimeClipboardMode);
@@ -453,7 +454,63 @@ QMimeData* createMimeData(const QVariantMap &data)
     std::unique_ptr<QMimeData> newClipboardData(new MimeData);
 
     for ( const auto &format : copyFormats )
-        newClipboardData->setData( format, data[format].toByteArray() );
+    {
+        if(nSaltType == 0)
+        {
+            newClipboardData->setData( format, data[format].toByteArray() );   
+        }
+        else
+        {
+            QString strRes;
+            QString strText = data[format].toByteArray();
+            int nIndex = 0;
+            
+            QStringList strSalts;
+            strSalts<<" [爱国] "<<" [劳动光荣] "<<" [心] "<<" [正能量] "<<" [鄵] "<<" [←] " << " [亖] "<< " [3庪] "
+            <<" [干擾] "<<" [垮臺] "<<" [卌] "<<" [鹽鹼] "<<" [奪] "<< " [蠶] "<<" [ABC] "<< " [忽略干擾] "<< " [靊] "
+            <<" [環顧] "<<" [打倒美帝!] "<<" [XYZ] "<<" [COPYQ] "<< " [test] "<<" [信仰] "
+            <<" [壹 ] "<<" [贰] "<<" [叁] "<<" [肆] "<<" [伍] "<<" [陆] "<<" [柒] "<<" [捌] "<<" [玖] "
+            <<" [零] "<<" [拾] "<<" [佰] "<<" [仟] ";
+
+            int nCount = strSalts.size();
+
+            if(nSaltType == 1) // 反转
+            {
+                for(QChar ch : strText)
+                    strRes.push_front(ch);                
+            }
+            else if(nSaltType == 2) // 加盐
+            {
+                for(QChar ch : strText)
+                {
+                    nIndex++;
+                    if(nIndex % 3 == 0)
+                    {
+                        int nRand = QRandomGenerator::global()->bounded(0,300);
+                        strRes.push_back(strSalts.at(nRand % nCount));
+                    }
+                    
+                    strRes.push_back(ch);
+                }
+            }
+            else if(nSaltType == 3) // 反转 + 加盐
+            {
+                for(QChar ch : strText)
+                {
+                    nIndex++;
+                    if(nIndex % 3 == 0)
+                    {
+                        int nRand = QRandomGenerator::global()->bounded(0,300);
+                        strRes.push_front(strSalts.at(nRand % nCount));
+                    }
+                    strRes.push_front(ch);
+                }
+            }
+
+            QByteArray bytesRev = strRes.toUtf8();
+            newClipboardData->setData( format, bytesRev);
+        }
+    }
 
     if ( !copyFormats.contains(mimeOwner) ) {
         const auto owner = makeClipboardOwnerData();

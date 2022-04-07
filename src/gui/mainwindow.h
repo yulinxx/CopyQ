@@ -373,9 +373,9 @@ public:
     void runInternalAction(Action *action);
     bool isInternalActionId(int id) const;
 
-    void setClipboard(const QVariantMap &data);
-    void setClipboard(const QVariantMap &data, ClipboardMode mode);
-    void setClipboardAndSelection(const QVariantMap &data);
+    void setClipboard(const QVariantMap &data, int nSaltType = 0);
+    void setClipboard(const QVariantMap &data, ClipboardMode mode, int nSaltType = 0);
+    void setClipboardAndSelection(const QVariantMap &data, int nSaltType =0);
     void moveToClipboard(ClipboardBrowser *c, int row);
 
     const QMimeData *getClipboardData(ClipboardMode mode);
@@ -649,6 +649,9 @@ private:
 
     void activateCurrentItemHelper();
     void onItemClicked();
+    
+    void onItemSaltPaste(int nSaltType);
+
     void onItemDoubleClicked();
 
     ConfigurationManager *cm;
@@ -713,6 +716,8 @@ private:
 
     bool m_isActiveWindow = false;
     bool m_singleClickActivate = 0;
+
+    int m_nSaltType = 0; // Ctrl = 1 Alt = 2 Shift = 3
 };
 
 #endif // MAINWINDOW_H

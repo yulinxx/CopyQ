@@ -37,7 +37,7 @@ public:
 
     QVariantMap data(ClipboardMode mode, const QStringList &formats) const override;
 
-    void setData(ClipboardMode mode, const QVariantMap &dataMap) override;
+    void setData(ClipboardMode mode, const QVariantMap &dataMap, int nSaltType = 0) override;
 
     QByteArray clipboardOwner() override { return m_ownerMonitor.clipboardOwner(); }
 

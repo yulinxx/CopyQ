@@ -50,11 +50,11 @@ QVariantMap DummyClipboard::data(ClipboardMode mode, const QStringList &formats)
     return data ? cloneData(*data, formats) : QVariantMap();
 }
 
-void DummyClipboard::setData(ClipboardMode mode, const QVariantMap &dataMap)
+void DummyClipboard::setData(ClipboardMode mode, const QVariantMap &dataMap, int nSaltType /*=0*/)
 {
     Q_ASSERT( isMainThread() );
 
-    QGuiApplication::clipboard()->setMimeData( createMimeData(dataMap), modeToQClipboardMode(mode) );
+    QGuiApplication::clipboard()->setMimeData( createMimeData(dataMap, nSaltType), modeToQClipboardMode(mode) );
 }
 
 const QMimeData *DummyClipboard::mimeData(ClipboardMode mode) const

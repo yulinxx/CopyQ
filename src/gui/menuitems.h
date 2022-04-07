@@ -60,6 +60,8 @@ enum Id {
     Editor_EraseStyle,
     Editor_Search,
 
+    Item_SaltPasteB,
+    Item_SaltPasteC,
     Item_MoveToClipboard,
     Item_ShowContent,
     Item_Remove,

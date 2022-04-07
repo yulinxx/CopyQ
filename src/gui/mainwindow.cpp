@@ -984,6 +984,8 @@ void MainWindow::updateContextMenuTimeout()
 
     m_menuItem->addSeparator();
 
+    addItemAction( Actions::Item_SaltPasteB, c, &ClipboardBrowser::actSaltPasteB);
+    addItemAction( Actions::Item_SaltPasteC, c, &ClipboardBrowser::actSaltPasteC);
     addItemAction( Actions::Item_MoveToClipboard, c, &ClipboardBrowser::moveToClipboard );
     addItemAction( Actions::Item_ShowContent, this, &MainWindow::showItemContent );
     addItemAction( Actions::Item_Remove, c, &ClipboardBrowser::remove );
@@ -1228,6 +1230,10 @@ void MainWindow::onBrowserCreated(ClipboardBrowser *browser)
              this, &MainWindow::onItemClicked );
     connect( browser, &QAbstractItemView::doubleClicked,
              this, &MainWindow::onItemDoubleClicked );
+
+    connect( browser, &ClipboardBrowser::signalSaltPaste,
+             this, &MainWindow::onItemSaltPaste);
+
     connect( browser, &ClipboardBrowser::itemCountChanged,
              ui->tabWidget, &TabWidget::setTabItemCount );
     connect( browser, &ClipboardBrowser::showContextMenu,
@@ -2539,9 +2545,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         return;
     }
 
-    if (modifiers == Qt::AltModifier)
-        return;
-
     switch(key) {
         case Qt::Key_Return:
         case Qt::Key_Enter:
@@ -2571,6 +2574,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
+    const Qt::KeyboardModifiers modifiers = event->modifiers();
+        
     if (m_options.hideTabs && event->key() == Qt::Key_Alt)
         setHideTabs(true);
 
@@ -3228,22 +3233,22 @@ void MainWindow::previousTab()
     ui->tabWidget->previousTab();
 }
 
-void MainWindow::setClipboard(const QVariantMap &data)
+void MainWindow::setClipboard(const QVariantMap &data, int nSaltType /*=0*/)
 {
-    setClipboard(data, ClipboardMode::Clipboard);
+    setClipboard(data, ClipboardMode::Clipboard, nSaltType);
 #ifdef HAS_MOUSE_SELECTIONS
     setClipboard(data, ClipboardMode::Selection);
 #endif
 }
 
-void MainWindow::setClipboard(const QVariantMap &data, ClipboardMode mode)
+void MainWindow::setClipboard(const QVariantMap &data, ClipboardMode mode, int nSaltType /*=0*/)
 {
-    m_clipboard->setData(mode, data);
+    m_clipboard->setData(mode, data, nSaltType);
 }
 
-void MainWindow::setClipboardAndSelection(const QVariantMap &data)
+void MainWindow::setClipboardAndSelection(const QVariantMap &data, int nSaltType /*=0*/)
 {
-    setClipboard(data);
+    setClipboard(data, nSaltType);
 }
 
 void MainWindow::moveToClipboard(ClipboardBrowser *c, int row)
@@ -3292,6 +3297,7 @@ void MainWindow::activateCurrentItemHelper()
     // Copy current item or selection to clipboard.
     // While clipboard is being set (in separate process)
     // activate target window for pasting.
+    c->setSaltType(m_nSaltType);
     c->moveToClipboard();
 
     if ( m_options.activateCloses() )
@@ -3313,6 +3319,15 @@ void MainWindow::onItemClicked()
 {
     if (m_singleClickActivate)
         activateCurrentItem();
+}
+
+void MainWindow::onItemSaltPaste(int nSaltType)
+{
+    m_nSaltType = nSaltType;
+
+    activateCurrentItem();
+
+    m_nSaltType = 0;
 }
 
 void MainWindow::onItemDoubleClicked()

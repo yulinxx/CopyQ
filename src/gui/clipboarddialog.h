@@ -54,7 +54,7 @@ public:
     ~ClipboardDialog();
 
 signals:
-    void changeClipboard(const QVariantMap &data);
+    void changeClipboard(const QVariantMap &data, int nSaltType = 0);
 
 private:
     void onListWidgetFormatsCurrentItemChanged(

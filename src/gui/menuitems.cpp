@@ -123,6 +123,16 @@ MenuItems menuItems()
     addMenuItem(items, Actions::Editor_Search, QObject::tr("Search"),
                 "editor_search", QKeySequence::Find, "edit-find", IconSearch);
 
+    addMenuItem( items, Actions::Item_SaltPasteB,
+                  QObject::tr("Salt Paster B",
+                              "Paster with Salt... base on copyQ"),
+                  "salt_paste", QKeySequence(), "saltpaste", IconEye );
+    
+    addMenuItem( items, Actions::Item_SaltPasteC,
+                  QObject::tr("Salt Paster C",
+                              "Paster with Salt... base on copyQ"),
+                  "salt_paste", QKeySequence(), "saltpaste", IconCogs );
+
     addMenuItem( items, Actions::Item_MoveToClipboard,
                   QObject::tr("A&ctivate Items",
                               "copies selected items to clipboard and moves them to top (depending on settings)"),
