@@ -452,13 +452,16 @@ QMimeData* createMimeData(const QVariantMap &data, int nSaltType/* = 0*/)
             int nIndex = 0;
             
             QStringList strSalts;
-            strSalts<<" [爱国] "<<" [劳动光荣] "<<" [心] "<<" [正能量] "<<" [鄵] "<<" [←] " << " [亖] "<< " [3庪] "
-            <<" [干擾] "<<" [垮臺] "<<" [卌] "<<" [鹽鹼] "<<" [奪] "<< " [蠶] "<<" [ABC] "<< " [忽略干擾] "<< " [靊] "
-            <<" [環顧] "<<" [打倒美帝!] "<<" [XYZ] "<<" [COPYQ] "<< " [test] "<<" [信仰] "
+            strSalts<<" [爱国] "<<" [劳动光荣] "<<" [心] "<<" [正能量] "<<" [美好] "<<" [←] " << " [亖] "<< " [3庪] "
+            <<" [干擾] "<<" [生活] "<<" [卌] "<<" [统一] "<<" [奪] "<< " [蠶] "<<" [ABC] "<< " [忽略干擾] "<< " [靊] "
+            <<" [幸福] "<<" [打倒美帝!] "<<" [XYZ] "<<" [人民] "<< " [test] "<<" [信仰] "
             <<" [壹 ] "<<" [贰] "<<" [叁] "<<" [肆] "<<" [伍] "<<" [陆] "<<" [柒] "<<" [捌] "<<" [玖] "
             <<" [零] "<<" [拾] "<<" [佰] "<<" [仟] ";
 
             int nCount = strSalts.size();
+            std::default_random_engine e(time(0));
+            std::uniform_int_distribution<int> uA(3,10);
+            std::uniform_int_distribution<int> uB(0,300);
 
             if(nSaltType == 1) // 反转
             {
@@ -469,11 +472,11 @@ QMimeData* createMimeData(const QVariantMap &data, int nSaltType/* = 0*/)
             {
                 for(QChar ch : strText)
                 {
+                    
                     nIndex++;
-                    if(nIndex % 3 == 0)
+                    if(nIndex % uA(e) == 0)
                     {
-                        int nRand = QRandomGenerator::global()->bounded(0,300);
-                        strRes.push_back(strSalts.at(nRand % nCount));
+                        strRes.push_back(strSalts.at(uB(e)% nCount));
                     }
                     
                     strRes.push_back(ch);
@@ -484,10 +487,10 @@ QMimeData* createMimeData(const QVariantMap &data, int nSaltType/* = 0*/)
                 for(QChar ch : strText)
                 {
                     nIndex++;
-                    if(nIndex % 3 == 0)
+                    if(nIndex % uA(e) == 0)
                     {
-                        int nRand = QRandomGenerator::global()->bounded(0,300);
-                        strRes.push_front(strSalts.at(nRand % nCount));
+                        // int nRand = QRandomGenerator::global()->bounded(0,300);
+                        strRes.push_front(strSalts.at(uB(e) % nCount));
                     }
                     strRes.push_front(ch);
                 }
