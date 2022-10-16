@@ -1046,6 +1046,7 @@ void ClipboardBrowser::mousePressEvent(QMouseEvent *event)
 {
     if ( event->button() == Qt::MiddleButton)
     {
+        setCurrentIndex(indexAt(event->pos()));
         emit signalSaltPaste(1);
         return;
     }
