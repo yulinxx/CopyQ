@@ -1,3 +1,107 @@
+# 6.3.2
+
+## Fixed
+
+- Fixes potential crash when rendering an empty item list.
+
+# 6.3.1
+
+## Fixed
+
+- Fixes rendering issues (#1728, #2093).
+
+- Fixes the space between row number and the item content. This is customizable
+  with `num_margin` theme option.
+
+- Fixes Qt 6 build.
+
+- Wayland: Fixes synchronizing selection with clipboard with UTF-8 text.
+
+- X11: Fixes tray window popup position on multi-monitor (#2038).
+
+# 6.3.0
+
+## Changed
+
+- UI margins are decreased leaving more space space for item content.
+
+- Script function `config()` now lists current values for each option (#412).
+  Example of new `copyq config` output:
+
+      ...
+      clipboard_notification_lines=3
+        Number of lines to show for new clipboard content.
+
+        Set to 0 to disable.
+      clipboard_tab=&clipboard
+        Name of tab that will automatically store new clipboard content.
+
+        Leave empty to disable automatic storing.
+      close_on_unfocus=false
+        Close main window when other application has focus
+      ...
+
+- FakeVim plugin improvements from upstream:
+
+    * Ignores only full-line comments in configuration file
+    * Support backslashes in substitute command patterns
+    * Partial support for multi-repeat command (:g, :v)
+
+- Improves rendering item list speed.
+
+- Updates icon font from Font-Awesome 6.2.0
+
+## Fixed
+
+- Fixes showing window under mouse cursor (#2088).
+
+- In single-click-activate mode, multiple items can be selected while holding
+  Shift or Ctrl (#2056).
+
+- The pre-defined command "Ignore items with no or single character" now also
+  avoids synchronizing selection and showing popup if less than two characters
+  where copied.
+
+- Wayland: Fixes synchronizing selection with clipboard in various cases.
+
+- Wayland: Fixes possible crash when managed clipboard data changes while it is
+  accessed.
+
+# 6.2.0
+
+## Added
+
+- Tabs can now load at least some items from a partially corrupted data file
+  dropping the rest of the items.
+
+- Simpler and safer data saving uses Qt framework (`QSaveFile`).
+
+- New `Settings` class in scripts can be used to manage INI configuration
+  files (#1964).
+
+## Changed
+
+- Obscure untested Save button has been removed from Action dialog.
+
+## Fixed
+
+- Fixes restoring window geometry in a loop (#1946).
+
+- Fixes converting internal byte array representation in scripts in some rare
+  cases.
+
+- Fixes tray menu appearance to follow the configuration (#1896).
+
+- The search history popup menu for will be closed if mouse wheel scrolls and
+  mouse pointer is outside the menu (#1980).
+
+- macOS: Fixes pasting (#2012).
+
+- Windows: Fixes exiting the app on logout (#1249).
+
+- Windows: Workaround to treat native path separators properly and not as
+  special escape characters.
+
 # 6.1.0
 
 ## Added
@@ -1131,7 +1235,7 @@
 - Fix navigating item list
 - Fix getting boolean from checkbox in dialog()
 - Fix default move action for drag'n'drop
-- Fix exitting on logout when tray is disabled
+- Fix exiting on logout when tray is disabled
 
 # v3.0.0
 - Pinned and protected items

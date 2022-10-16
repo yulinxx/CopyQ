@@ -1,21 +1,4 @@
-/*
-    Copyright (c) 2020, Lukas Holecek <hluk@email.cz>
-
-    This file is part of CopyQ.
-
-    CopyQ is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    CopyQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with CopyQ.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -472,14 +455,17 @@ class SystemTrayIcon final : public KStatusNotifierItem {
     Q_OBJECT
 public:
     explicit SystemTrayIcon(QWidget *parent = nullptr)
-        : KStatusNotifierItem(QCoreApplication::applicationName(), parent)
+        : KStatusNotifierItem(QCoreApplication::applicationName())
     {
         setIcon(appIcon());
+        // Parent is not passed to the KStatusNotifierItem constructor because
+        // it calls KStatusNotifierItem::setAssociatedWidget() which breaks
+        // setting main window position.
+        setParent(parent);
         setStandardActionsEnabled(false);
         setTitle(QGuiApplication::applicationDisplayName());
         setToolTipTitle(QGuiApplication::applicationDisplayName());
         setCategory(KStatusNotifierItem::ApplicationStatus);
-        setAssociatedWidget(parent);
     }
 
     void setIcon(const QIcon &icon) { setIconByPixmap(icon); }
@@ -514,7 +500,9 @@ class SystemTrayIcon final : public QSystemTrayIcon {
 public:
     explicit SystemTrayIcon(QWidget *parent = nullptr)
         : QSystemTrayIcon(parent)
-    {}
+    {
+        setIcon(appIcon());
+    }
 };
 #endif
 
@@ -730,17 +718,14 @@ bool MainWindow::focusNextPrevChild(bool next)
     if (!c)
         return false;
 
-    // Fix tab order while searching in editor.
-    if (c->isInternalEditorOpen() && !browseMode()) {
-        if ( next && ui->searchBar->hasFocus() ) {
-            c->setFocus();
-            return true;
-        }
+    if ( next && ui->searchBar->hasFocus() ) {
+        c->setFocus();
+        return true;
+    }
 
-        if ( !next && c->hasFocus() ) {
-            ui->searchBar->setFocus();
-            return true;
-        }
+    if ( !next && c->hasFocus() && !browseMode() ) {
+        ui->searchBar->setFocus();
+        return true;
     }
 
     // Focus floating preview dock.
@@ -1122,11 +1107,8 @@ void MainWindow::onItemCommandActionTriggered(CommandAction *commandAction, cons
         }
     }
 
-    if (command.remove) {
-        const int lastRow = c->removeIndexes(selected);
-        if (lastRow != -1)
-            c->setCurrent(lastRow);
-    }
+    if (command.remove)
+        c->removeIndexes(selected);
 
     if (command.hideWindow)
         hideWindow();
@@ -1724,8 +1706,6 @@ void MainWindow::setTrayEnabled(bool enable)
             connect( m_tray, &SystemTrayIcon::activated,
                      this, &MainWindow::trayActivated );
         }
-
-        updateIcon();
 
         m_tray->show();
 
@@ -2437,7 +2417,7 @@ void MainWindow::showError(const QString &msg)
     auto notification = createNotification( QString::number(notificationId) );
     notification->setTitle( tr("CopyQ Error", "Notification error message title") );
     notification->setMessage(msg);
-    notification->setIcon(IconTimesCircle);
+    notification->setIcon(IconCircleXmark);
 }
 
 Notification *MainWindow::createNotification(const QString &id)
@@ -2520,13 +2500,15 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 
     // Allow browsing items in search mode without focusing item list.
-    if (c && !browseMode()) {
+    if ( c && ui->searchBar->hasFocus() ) {
         switch(key) {
             case Qt::Key_Down:
             case Qt::Key_Up:
             case Qt::Key_PageDown:
             case Qt::Key_PageUp:
+                c->setFocus();
                 QCoreApplication::sendEvent(c, event);
+                ui->searchBar->setFocus();
                 return;
         }
     }
@@ -2647,6 +2629,7 @@ void MainWindow::loadSettings(QSettings &settings, AppConfig *appConfig)
 
     m_trayMenu->setRowIndexFromOne(m_sharedData->rowIndexFromOne);
     m_menu->setRowIndexFromOne(m_sharedData->rowIndexFromOne);
+    m_sharedData->theme.setRowIndexFromOne(m_sharedData->rowIndexFromOne);
 
     m_options.transparency = appConfig->option<Config::transparency>();
     m_options.transparencyFocused = appConfig->option<Config::transparency_focused>();
@@ -2726,9 +2709,9 @@ void MainWindow::loadSettings(QSettings &settings, AppConfig *appConfig)
 
     m_singleClickActivate = appConfig->option<Config::activate_item_with_single_click>();
 
-    const auto toolTipStyleSheet = theme().getToolTipStyleSheet();
-    m_trayMenu->setStyleSheet(toolTipStyleSheet);
-    m_menu->setStyleSheet(toolTipStyleSheet);
+    const auto menuStyleSheet = theme().getMenuStyleSheet();
+    m_trayMenu->setStyleSheet(menuStyleSheet);
+    m_menu->setStyleSheet(menuStyleSheet);
 
     if (m_options.nativeTrayMenu != appConfig->option<Config::native_tray_menu>())
         m_options.nativeTrayMenu = appConfig->option<Config::native_tray_menu>();
@@ -3089,8 +3072,13 @@ QString MainWindow::configDescription()
     QStringList options = configurationManager.options();
     options.sort();
     QString opts;
-    for (const auto &option : options)
-        opts.append( option + "\n  " + configurationManager.optionToolTip(option).replace('\n', "\n  ") + '\n' );
+    AppConfig appConfig;
+    configurationManager.loadSettings(&appConfig);
+    for (const auto &option : options) {
+        const QString description = configurationManager.optionToolTip(option).replace('\n', "\n  ");
+        const QString value = configurationManager.optionValue(option).toString().replace('\n', "\\n");
+        opts.append( QStringLiteral("%1=%2\n  %3\n").arg(option, value, description) );
+    }
     return opts;
 }
 
@@ -3317,7 +3305,7 @@ void MainWindow::activateCurrentItemHelper()
 
 void MainWindow::onItemClicked()
 {
-    if (m_singleClickActivate)
+    if (m_singleClickActivate && QGuiApplication::keyboardModifiers() == Qt::NoModifier)
         activateCurrentItem();
 }
 
