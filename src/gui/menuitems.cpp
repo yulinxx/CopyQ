@@ -109,12 +109,12 @@ MenuItems menuItems()
     addMenuItem( items, Actions::Item_SaltPasteB,
                   QObject::tr("Salt Paster B",
                               "Paster with Salt... base on copyQ"),
-                  "salt_paste", QKeySequence(), "saltpaste", IconEye );
+                  "salt_paste", QKeySequence(), "saltpaste", IconWindows );
     
     addMenuItem( items, Actions::Item_SaltPasteC,
                   QObject::tr("Salt Paster C",
                               "Paster with Salt... base on copyQ"),
-                  "salt_paste", QKeySequence(), "saltpaste", IconCogs );
+                  "salt_paste", QKeySequence(), "saltpaste", IconYahoo );
 
     addMenuItem( items, Actions::Item_MoveToClipboard,
                   QObject::tr("A&ctivate Items",
